@@ -1,5 +1,5 @@
 import { useContext, useState } from 'react';
-import { Plus, Search, Package, Filter } from 'lucide-react';
+import { Plus, Search, Package, Filter, ChevronDown, ChevronUp, X } from 'lucide-react';
 import { MedicineContext } from '../context/MedicineContext';
 import MedicineTable from '../components/MedicineTable';
 import MedicineModal from '../components/MedicineModal';
@@ -10,14 +10,95 @@ export default function Inventory() {
   const [selectedMedicine, setSelectedMedicine] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('');
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
+
+  // Advanced filter states
+  const [stockStatus, setStockStatus] = useState('');
+  const [expiryStatus, setExpiryStatus] = useState('');
+  const [manufacturer, setManufacturer] = useState('');
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [sortBy, setSortBy] = useState('name');
+  const [sortOrder, setSortOrder] = useState('asc');
 
   const filteredMedicines = medicines.filter(medicine => {
     const nameMatch = medicine.name.toLowerCase().includes(searchTerm.toLowerCase());
     const categoryMatch = !filterCategory || medicine.category === filterCategory;
-    return nameMatch && categoryMatch;
+    const manufacturerMatch = !manufacturer || medicine.manufacturer === manufacturer;
+
+    // Stock status filter
+    let stockMatch = true;
+    if (stockStatus) {
+      if (stockStatus === 'low') stockMatch = medicine.stock < 20;
+      else if (stockStatus === 'medium') stockMatch = medicine.stock >= 20 && medicine.stock < 50;
+      else if (stockStatus === 'high') stockMatch = medicine.stock >= 50;
+    }
+
+    // Expiry status filter
+    let expiryMatch = true;
+    if (expiryStatus) {
+      const today = new Date();
+      const expiryDate = new Date(medicine.expiryDate);
+      const daysUntilExpiry = Math.ceil((expiryDate - today) / (1000 * 60 * 60 * 24));
+
+      if (expiryStatus === 'expired') expiryMatch = expiryDate < today;
+      else if (expiryStatus === 'expiring-soon') expiryMatch = daysUntilExpiry >= 0 && daysUntilExpiry <= 30;
+      else if (expiryStatus === 'valid') expiryMatch = daysUntilExpiry > 30;
+    }
+
+    // Price range filter
+    const priceMatch = (!minPrice || medicine.price >= parseFloat(minPrice)) &&
+                      (!maxPrice || medicine.price <= parseFloat(maxPrice));
+
+    return nameMatch && categoryMatch && manufacturerMatch && stockMatch && expiryMatch && priceMatch;
   });
 
+  // Sort filtered medicines
+  const sortedMedicines = [...filteredMedicines].sort((a, b) => {
+    let aValue, bValue;
+
+    switch (sortBy) {
+      case 'name':
+        aValue = a.name.toLowerCase();
+        bValue = b.name.toLowerCase();
+        break;
+      case 'price':
+        aValue = a.price;
+        bValue = b.price;
+        break;
+      case 'stock':
+        aValue = a.stock;
+        bValue = b.stock;
+        break;
+      case 'expiry':
+        aValue = new Date(a.expiryDate);
+        bValue = new Date(b.expiryDate);
+        break;
+      default:
+        return 0;
+    }
+
+    if (sortOrder === 'asc') {
+      return aValue > bValue ? 1 : aValue < bValue ? -1 : 0;
+    } else {
+      return aValue < bValue ? 1 : aValue > bValue ? -1 : 0;
+    }
+  });
+
+  const clearAllFilters = () => {
+    setSearchTerm('');
+    setFilterCategory('');
+    setStockStatus('');
+    setExpiryStatus('');
+    setManufacturer('');
+    setMinPrice('');
+    setMaxPrice('');
+    setSortBy('name');
+    setSortOrder('asc');
+  };
+
   const categories = [...new Set(medicines.map(m => m.category))];
+  const manufacturers = [...new Set(medicines.map(m => m.manufacturer))];
   const lowStockCount = medicines.filter(m => m.stock < 20).length;
   const expiredCount = medicines.filter(m => new Date(m.expiryDate) < new Date()).length;
 
@@ -105,6 +186,16 @@ export default function Inventory() {
             </select>
           </div>
 
+          {/* Advanced Filters Toggle */}
+          <button
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className="btn-secondary flex items-center justify-center gap-2 whitespace-nowrap"
+          >
+            <Filter size={18} />
+            Advanced Filters
+            {showAdvancedFilters ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+          </button>
+
           {/* Add Button */}
           <button
             onClick={handleAddClick}
@@ -113,14 +204,131 @@ export default function Inventory() {
             <Plus size={20} /> Add Medicine
           </button>
         </div>
+
+        {/* Advanced Filters Section */}
+        {showAdvancedFilters && (
+          <div className="mt-6 p-4 bg-gray-50 rounded-lg border">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+              {/* Stock Status Filter */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Stock Status</label>
+                <select
+                  value={stockStatus}
+                  onChange={(e) => setStockStatus(e.target.value)}
+                  className="input-field w-full"
+                >
+                  <option value="">All Stock Levels</option>
+                  <option value="low">🔴 Low Stock (&lt;20)</option>
+                  <option value="medium">🟡 Medium Stock (20-50)</option>
+                  <option value="high">🟢 High Stock (&gt;50)</option>
+                </select>
+              </div>
+
+              {/* Expiry Status Filter */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Status</label>
+                <select
+                  value={expiryStatus}
+                  onChange={(e) => setExpiryStatus(e.target.value)}
+                  className="input-field w-full"
+                >
+                  <option value="">All Expiry Status</option>
+                  <option value="expired">🔴 Expired</option>
+                  <option value="expiring-soon">🟡 Expiring Soon (&lt;30 days)</option>
+                  <option value="valid">🟢 Valid (&gt;30 days)</option>
+                </select>
+              </div>
+
+              {/* Manufacturer Filter */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Manufacturer</label>
+                <select
+                  value={manufacturer}
+                  onChange={(e) => setManufacturer(e.target.value)}
+                  className="input-field w-full"
+                >
+                  <option value="">All Manufacturers</option>
+                  {manufacturers.map(manuf => (
+                    <option key={manuf} value={manuf}>{manuf}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Sort Options */}
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Sort By</label>
+                <div className="flex gap-2">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    className="input-field flex-1"
+                  >
+                    <option value="name">Name</option>
+                    <option value="price">Price</option>
+                    <option value="stock">Stock</option>
+                    <option value="expiry">Expiry Date</option>
+                  </select>
+                  <button
+                    onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+                    className="btn-secondary px-3"
+                    title={sortOrder === 'asc' ? 'Ascending' : 'Descending'}
+                  >
+                    {sortOrder === 'asc' ? '↑' : '↓'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Min Price (₹)</label>
+                <input
+                  type="number"
+                  placeholder="0.00"
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  className="input-field w-full"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+              <div className="relative">
+                <label className="block text-sm font-medium text-gray-700 mb-1">Max Price (₹)</label>
+                <input
+                  type="number"
+                  placeholder="No limit"
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className="input-field w-full"
+                  min="0"
+                  step="0.01"
+                />
+              </div>
+            </div>
+
+            {/* Clear Filters Button */}
+            <div className="flex justify-end">
+              <button
+                onClick={clearAllFilters}
+                className="btn-danger flex items-center gap-2"
+              >
+                <X size={16} /> Clear All Filters
+              </button>
+            </div>
+          </div>
+        )}
+
         <p className="text-sm text-gray-600 mt-3">
-          📊 Showing <span className="font-bold text-blue-600">{filteredMedicines.length}</span> medicine(s)
+          📊 Showing <span className="font-bold text-blue-600">{sortedMedicines.length}</span> medicine(s)
+          {searchTerm && <span> matching "<span className="font-bold">{searchTerm}</span>"</span>}
+          {filterCategory && <span> in category "<span className="font-bold">{filterCategory}</span>"</span>}
         </p>
       </div>
 
       {/* Table Section */}
       <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
-        {filteredMedicines.length === 0 ? (
+        {sortedMedicines.length === 0 ? (
           <div className="card text-center py-12 bg-white">
             <Package size={48} className="mx-auto text-gray-400 mb-4" />
             <p className="text-xl font-semibold text-gray-600">No medicines found</p>
@@ -135,7 +343,7 @@ export default function Inventory() {
         ) : (
           <div className="card bg-white overflow-hidden">
             <MedicineTable
-              medicines={filteredMedicines}
+              medicines={sortedMedicines}
               onEdit={handleEditClick}
               onDelete={handleDelete}
             />

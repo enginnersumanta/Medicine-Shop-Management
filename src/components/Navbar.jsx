@@ -1,7 +1,9 @@
 import { Bell, User, Settings, Menu, X, LogOut } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -12,6 +14,12 @@ export default function Navbar() {
     { id: 2, message: '✅ New sale: Invoice #1005', time: '10 mins ago', type: 'success' },
     { id: 3, message: '❌ Medicine expired: Paracetamol', time: '1 hour ago', type: 'danger' },
   ];
+
+  const handleLogout = () => {
+    if (window.confirm('Are you sure you want to logout?')) {
+      logout();
+    }
+  };
 
   return (
     <nav className="bg-gradient-to-r from-red-600 to-blue-800 shadow-lg px-4 md:px-20 py-4 flex justify-between items-center relative">
@@ -134,7 +142,7 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Profile / Admin */}
+        {/* Profile / User */}
         <div className="relative flex items-center gap-3 pl-6 border-l-2 border-blue-400">
           <div className="cursor-pointer" onClick={() => {
             setShowProfile(!showProfile);
@@ -142,7 +150,7 @@ export default function Navbar() {
             setShowSettings(false);
           }}>
             <div className="w-10 h-10 bg-gradient-to-br from-yellow-300 to-orange-400 rounded-full flex items-center justify-center text-white font-bold hover:shadow-lg transition transform hover:scale-110 border-2 border-white">
-              👤
+              {user?.name?.charAt(0).toUpperCase() || '👤'}
             </div>
           </div>
           <div className="cursor-pointer hidden lg:block" onClick={() => {
@@ -150,18 +158,18 @@ export default function Navbar() {
             setShowNotifications(false);
             setShowSettings(false);
           }}>
-            <p className="text-sm font-bold text-white">Admin User</p>
-            <p className="text-xs text-blue-100">Pharmacist</p>
+            <p className="text-sm font-bold text-white">{user?.name || 'User'}</p>
+            <p className="text-xs text-blue-100 capitalize">{user?.role || 'Role'}</p>
           </div>
 
           {showProfile && (
             <div className="absolute right-0 top-14 w-56 bg-white border-2 border-blue-200 rounded-lg shadow-xl z-50">
               <div className="p-4 border-b-2 border-blue-100 bg-gradient-to-r from-blue-50 to-blue-100">
-                <p className="font-bold text-gray-800">👤 Admin User</p>
-                <p className="text-xs text-gray-500">admin@medicineshop.com</p>
+                <p className="font-bold text-gray-800">{user?.name || 'User'}</p>
+                <p className="text-xs text-gray-500">{user?.email || 'user@medicineshop.com'}</p>
               </div>
               <div className="p-2 space-y-1">
-                <button 
+                <button
                   onClick={() => {
                     alert('Profile - View and edit your profile information');
                     setShowProfile(false);
@@ -170,7 +178,7 @@ export default function Navbar() {
                 >
                   <User size={16} /> Profile
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     alert('Account Settings - Manage your account preferences, email, and security');
                     setShowProfile(false);
@@ -179,11 +187,8 @@ export default function Navbar() {
                 >
                   <Settings size={16} /> Account Settings
                 </button>
-                <button 
-                  onClick={() => {
-                    alert('Logout - You have been logged out successfully');
-                    setShowProfile(false);
-                  }}
+                <button
+                  onClick={handleLogout}
                   className="w-full text-left px-4 py-3 hover:bg-red-100 rounded text-red-600 text-sm flex items-center gap-2 font-medium transition cursor-pointer active:scale-95 hover:shadow-md border-t border-gray-200"
                 >
                   <LogOut size={16} /> Logout
@@ -240,10 +245,7 @@ export default function Navbar() {
               <User size={18} /> Profile
             </button>
             <button 
-              onClick={() => {
-                alert('Logout - You have been logged out successfully');
-                setShowMobileMenu(false);
-              }}
+              onClick={handleLogout}
               className="w-full flex items-center gap-2 px-4 py-3 text-red-600 hover:bg-red-100 rounded transition cursor-pointer active:scale-95 font-medium border-t border-gray-200 pt-3"
             >
               <LogOut size={18} /> Logout

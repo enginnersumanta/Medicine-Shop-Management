@@ -4,16 +4,29 @@ A complete React-based POS (Point of Sale) and inventory management system for m
 
 ## 🎯 Features
 
-### 1. **Dashboard** (Home)
+### 1. **Authentication & User Management**
+- **Role-Based Access Control**: Admin, Manager, and Staff roles with different permissions
+- **Secure Login System**: Username/password authentication with session persistence
+- **User Registration**: New user account creation (admin approval required)
+- **User Management**: Admin can view, edit, and manage all system users
+- **Session Management**: Automatic logout and session handling
+
+### 2. **Dashboard** (Home)
 - **Overview Statistics**: Total medicines, revenue, sales count, and low stock alerts
 - **Stock Summary**: Real-time inventory status
 - **Quick Stats**: Average sale value, total transactions, categories count
 - **Recent Sales**: Quick view of latest 5 transactions
 - **System Health**: Visual metrics for system status
 
-### 2. **Medicine Inventory**
+### 3. **Medicine Inventory**
 - **Complete Inventory Management**: Add, edit, and delete medicines
-- **Search & Filter**: Find medicines by name and category
+- **Advanced Search & Filter**: 
+  - Search by medicine name
+  - Filter by category and manufacturer
+  - Stock status filtering (Low <20, Medium 20-50, High >50)
+  - Expiry status filtering (Expired, Expiring Soon <30 days, Valid)
+  - Price range filtering (min/max price)
+  - Sort by name, price, stock, or expiry date (ascending/descending)
 - **Stock Tracking**: Monitor stock levels with color-coded badges
   - 🟢 Green: Adequate stock (>50 units)
   - 🟡 Orange: Medium stock (20-50 units)
@@ -207,39 +220,66 @@ The application comes with sample medicines:
 6. **Top Performers** - Best-selling medicines
 7. **Stock Alerts** - Low and expired items
 
-## 🛡️ Validation & Business Rules
+## � Authentication & Authorization
 
-- ✅ Medicines require all fields
-- ✅ Stock cannot be negative
-- ✅ Price must be positive
-- ✅ Sale cannot process without items
-- ✅ Automatic stock update on sale
-- ✅ Expiry date validation
-- ⚠️ Low stock warnings (<20 units)
-- ⚠️ Expired medicine alerts
+### User Roles & Permissions
+
+**Administrator (Admin):**
+- Full system access
+- User management (create, edit, delete users)
+- All operations: read, write, delete
+- Access to all pages and features
+- System configuration and settings
+
+**Manager:**
+- Inventory management and sales operations
+- View reports and analytics
+- Cannot manage users or access admin-only features
+- Limited to operational tasks
+
+**Staff:**
+- Basic sales operations
+- View inventory and medicine details
+- Cannot access reports or user management
+- Limited to day-to-day sales activities
+
+### Demo Credentials
+
+- **Admin**: username: `admin`, password: `admin123`
+- **Manager**: username: `manager`, password: `manager123`
+- **Staff**: username: `staff`, password: `staff123`
+
+### Security Features
+
+- **Session Persistence**: Users stay logged in across browser sessions
+- **Role-Based UI**: Menu items and features shown based on user permissions
+- **Protected Routes**: Automatic redirection for unauthorized access
+- **Secure Logout**: Complete session cleanup on logout
 
 ## 🎓 Learning Concepts Used
 
-1. **React Hooks**: useState, useContext
-2. **React Router**: Multi-page navigation
-3. **Context API**: Global state management
-4. **Tailwind CSS**: Utility-first styling
-5. **Component Composition**: Reusable UI components
-6. **Form Handling**: Modal forms and validation
-7. **Array Operations**: Filter, map, reduce
-8. **Date Handling**: ISO date formats
-9. **Print Functionality**: Browser print API
-10. **Lucide React**: Professional icons
+1. **React Hooks**: useState, useContext, useEffect
+2. **React Router**: Multi-page navigation with protected routes
+3. **Context API**: Global state management for authentication and medicine data
+4. **Authentication & Authorization**: Login/logout, role-based access control, protected routes
+5. **Session Management**: localStorage for persistent authentication
+6. **Tailwind CSS**: Utility-first styling
+7. **Component Composition**: Reusable UI components
+8. **Form Handling**: Modal forms, validation, and user input
+9. **Array Operations**: Filter, map, reduce, sort
+10. **Advanced Filtering**: Multi-criteria filtering with logical operators
+11. **Dynamic Sorting**: Sort by multiple fields with ascending/descending order
+12. **Date Handling**: ISO date formats and date calculations
+13. **Print Functionality**: Browser print API
+14. **Lucide React**: Professional icons
 
 ## 📝 Future Enhancements
 
-- [ ] User authentication & roles
 - [ ] Database integration (Firebase, MongoDB)
 - [ ] Export reports to PDF/Excel
 - [ ] Barcode scanning
 - [ ] Multi-language support
 - [ ] Dark mode theme
-- [ ] Advanced filtering options
 - [ ] Customer loyalty program
 - [ ] Low stock auto-ordering
 - [ ] Sales trends visualization

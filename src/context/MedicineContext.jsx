@@ -34,6 +34,56 @@ export const MedicineProvider = ({ children }) => {
       expiryDate: '2026-09-15',
       batchNo: 'BTH003'
     },
+    {
+      id: 4,
+      name: 'Ibuprofen 400mg',
+      category: 'Pain Relief',
+      manufacturer: 'HealthPlus',
+      stock: 15, // Low stock
+      price: 6.50,
+      expiryDate: '2024-12-01', // Expired
+      batchNo: 'BTH004'
+    },
+    {
+      id: 5,
+      name: 'Cetirizine 10mg',
+      category: 'Allergy',
+      manufacturer: 'MediCare',
+      stock: 45, // Medium stock
+      price: 12.00,
+      expiryDate: '2026-08-20',
+      batchNo: 'BTH005'
+    },
+    {
+      id: 6,
+      name: 'Omeprazole 20mg',
+      category: 'Digestive',
+      manufacturer: 'PharmaCare',
+      stock: 25, // Medium stock
+      price: 15.00,
+      expiryDate: '2026-07-10', // Expiring soon
+      batchNo: 'BTH006'
+    },
+    {
+      id: 7,
+      name: 'Vitamin D3 1000IU',
+      category: 'Vitamins',
+      manufacturer: 'NutriHealth',
+      stock: 120,
+      price: 18.50,
+      expiryDate: '2027-01-15',
+      batchNo: 'BTH007'
+    },
+    {
+      id: 8,
+      name: 'Insulin Injection',
+      category: 'Diabetes',
+      manufacturer: 'BioPharm',
+      stock: 5, // Low stock
+      price: 45.00,
+      expiryDate: '2026-05-01', // Expiring soon
+      batchNo: 'BTH008'
+    }
   ]);
 
   const [sales, setSales] = useState([]);
